@@ -5,10 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>El Motor de Koans</title>
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -46,7 +44,6 @@
 
     <main id="app-container" class="w-full max-w-2xl mx-auto space-y-8">
         
-        <!-- SECCIÓN DE ONBOARDING E INPUT -->
         <div id="onboarding-section" class="bg-white p-6 sm:p-8 rounded-xl shadow-sm border border-slate-200">
             <h1 class="text-2xl sm:text-3xl font-bold text-center text-slate-900">El Motor de Koans</h1>
             <p class="text-center text-slate-500 mt-2 mb-6">Una herramienta de autoindagación.</p>
@@ -69,7 +66,6 @@
             </button>
         </div>
 
-        <!-- SECCIÓN DE VISUALIZACIÓN DEL KOAN -->
         <div id="koan-display-section" class="hidden">
             <div id="loader" class="hidden justify-center items-center py-10">
                 <div class="spinner"></div>
@@ -79,7 +75,6 @@
             </div>
         </div>
 
-        <!-- SECCIÓN DEL "DOJO" PARA REFLEXIONES -->
         <div id="dojo-section" class="hidden bg-white p-6 sm:p-8 rounded-xl shadow-sm border border-slate-200">
             <h2 class="text-lg font-semibold text-slate-800 mb-3">Tu Espacio de Contemplación</h2>
             <textarea id="reflection-text" placeholder="Escribe aquí tus reflexiones. Solo tú podrás verlas." rows="6" class="w-full p-4 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"></textarea>
@@ -91,15 +86,13 @@
             </div>
         </div>
         
-        <!-- SECCIÓN DE HISTORIAL -->
         <div class="text-center">
              <button id="toggle-history-btn" class="text-indigo-600 hover:text-indigo-800 font-medium transition-colors">Ver mi historial de Koans</button>
         </div>
         <div id="history-section" class="hidden bg-white p-6 sm:p-8 rounded-xl shadow-sm border border-slate-200">
             <h2 class="text-xl font-bold text-slate-900 mb-4">Mi Archivo de Koans</h2>
             <div id="history-content" class="space-y-6 max-h-96 overflow-y-auto pr-2">
-                <!-- El historial se cargará aquí -->
-            </div>
+                </div>
              <p id="history-empty-state" class="text-slate-500 text-center py-4">Aún no has guardado ninguna reflexión. Tu historial aparecerá aquí.</p>
         </div>
 
@@ -109,25 +102,21 @@
         <p class="text-xs text-slate-400">ID de Sesión (privado): <span id="user-id-display">cargando...</span></p>
     </footer>
 
-    <!-- Firebase y Lógica de la App -->
     <script type="module">
-        // <--- COPIA Y PEGA TODO DESDE AQUÍ --- >
-
         // Importaciones de Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- CONFIGURACIÓN DE FIREBASE ---
-        // ⚠️ ¡MUY IMPORTANTE! Reemplaza este bloque entero con el que copiaste de tu consola de Firebase.
         const firebaseConfig = {
-          apiKey: "AIzaSy...TU-CLAVE-REAL-VA-AQUI",
-          authDomain: "tu-proyecto.firebaseapp.com",
-          projectId: "tu-proyecto",
-          storageBucket: "tu-proyecto.appspot.com",
-          messagingSenderId: "1234567890",
-          appId: "1:1234567890:web:abcdef123456",
-          measurementId: "G-XXXXXXXXXX"
+          apiKey: "AIzaSyDVGmBLxbVDrGNlNetUjaZBN-bzfH9TAx4",
+          authDomain: "koan-engine.firebaseapp.com",
+          projectId: "koan-engine",
+          storageBucket: "koan-engine.firebasestorage.app",
+          messagingSenderId: "949726279638",
+          appId: "1:949726279638:web:59c14d5b82deaef8da1677",
+          measurementId: "G-3YT5MY0YCK"
         };
 
         // Initialize Firebase
@@ -253,7 +242,9 @@
                 });
                 saveConfirmation.classList.remove('hidden');
                 setTimeout(() => saveConfirmation.classList.add('hidden'), 2000);
-            } catch (error) {
+            }
+            // ... (el resto del código de saveReflection y loadHistory es similar, lo omito por brevedad) ...
+            catch (error) {
                 console.error("Error al guardar la reflexión:", error);
             } finally {
                 saveReflectionBtn.disabled = false;
@@ -275,9 +266,22 @@
                 historyEmptyState.classList.add('hidden');
                 const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 docs.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-                historyContent.innerHTML = docs.map(doc => `...`).join(''); // El código de renderizado del historial es largo, lo omito por brevedad pero debería estar aquí
+                historyContent.innerHTML = docs.map(doc => {
+                    const date = doc.createdAt ? new Date(doc.createdAt.seconds * 1000).toLocaleDateString('es-ES') : 'Fecha desconocida';
+                    return `
+                        <div class="border-b border-slate-200 pb-4">
+                            <p class="font-semibold text-slate-500 text-sm">"${doc.userInput}" (${doc.lens}) - <span class="italic">${date}</span></p>
+                            <blockquote class="mt-2 text-indigo-700 italic border-l-4 border-indigo-200 pl-4 py-1">
+                                "${doc.koan}"
+                            </blockquote>
+                            <p class="mt-3 text-slate-600 whitespace-pre-wrap">${doc.reflection}</p>
+                        </div>
+                    `;
+                }).join('');
+
              }, (error) => {
                  console.error("Error al cargar el historial:", error);
+                 historyContent.innerHTML = `<p class="text-red-500">No se pudo cargar el historial.</p>`;
              });
         };
         
